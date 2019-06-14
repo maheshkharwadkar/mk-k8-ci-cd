@@ -1,5 +1,5 @@
 node{
-  def Namespace = "default"
+  def Namespace = "pkapp"
   def ImageName = "maheshkharwadkar/mkimage"
   def Creds	= "mk-dockerhub-creds"
   def imageTag = "1.0"
@@ -27,7 +27,8 @@ node{
     }
     stage('Deploy on K8s'){
 
-     sh "ansible-playbook ansible/sayarapp-deploy/deploy.yml  --user=jenkins --extra-vars ImageName=${ImageName} --extra-vars imageTag=${imageTag} --extra-vars Namespace=${Namespace}"
+     sh "cd ansible/sayarapp-deploy"
+	 sh "ansible-playbook deploy.yml  --user=jenkins --extra-vars ImageName=${ImageName} --extra-vars imageTag=${imageTag} --extra-vars Namespace=${Namespace} -vv"
     }
      } catch (err) {
       currentBuild.result = 'FAILURE'
