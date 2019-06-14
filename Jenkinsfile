@@ -26,11 +26,12 @@ node{
 
     }
     stage('Deploy on K8s'){
-
-     sh "cd ansible/sayarapp-deploy"
-	 sh "pwd"
-	 sh "ansible-playbook deploy.yml  --user=jenkins --extra-vars ImageName=${ImageName} --extra-vars imageTag=${imageTag} --extra-vars Namespace=${Namespace} -vv"
-    }
+	script{
+        sh "cd ansible/sayarapp-deploy"
+	    sh "pwd"
+	    sh "cd ansible/sayarapp-deploy && ansible-playbook deploy.yml  --user=jenkins --extra-vars ImageName=${ImageName} --extra-vars imageTag=${imageTag} --extra-vars Namespace=${Namespace} -vv"
+      }
+	}
      } catch (err) {
       currentBuild.result = 'FAILURE'
     }
