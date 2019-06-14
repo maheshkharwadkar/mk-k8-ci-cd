@@ -29,7 +29,8 @@ node{
 	script{
         sh "cd ansible/sayarapp-deploy"
 	    sh "pwd"
-	    sh "cd ansible/sayarapp-deploy && ansible-playbook deploy.yml  --user=jenkins --extra-vars ImageName=${ImageName} --extra-vars imageTag=${imageTag} --extra-vars Namespace=${Namespace} -vv"
+	    sh (
+		    script: "cd ansible/sayarapp-deploy && ansible-playbook deploy.yml  --user=jenkins --extra-vars ImageName=${ImageName} --extra-vars imageTag=${imageTag} --extra-vars Namespace=${Namespace} -vv"
       }
 	}
      } catch (err) {
