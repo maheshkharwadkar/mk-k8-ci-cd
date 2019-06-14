@@ -1,13 +1,13 @@
 node{
   def Namespace = "default"
   def ImageName = "maheshkharwadkar/mkimage"
-  def Creds	= "2dfd9d0d-a300-49ee-aaaf-0a3efcaa5279"
+  def Creds	= "mk-dockerhub-creds"
   def imageTag = "1.0"
   try{
   stage('Checkout'){
-      git 'https://mAyman2612@bitbucket.org/mAyman2612/ci-cd-k8s.git'
-      sh "git rev-parse --short HEAD > .git/commit-id"
-      imageTag= readFile('.git/commit-id').trim()
+      git 'https://github.com/maheshkharwadkar/mk-k8-ci-cd.git'
+      //sh "git rev-parse --short HEAD > .git/commit-id"
+      //imageTag= readFile('.git/commit-id').trim()
 
 
 
