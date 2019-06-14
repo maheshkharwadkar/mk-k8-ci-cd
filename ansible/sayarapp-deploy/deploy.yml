@@ -9,14 +9,14 @@
   connection: local
   tasks:
     - name: Create Namespace {{ Namespace }}
-      command: "kubectl create namespace {{ Namespace }}"
+      shell: "sudo kubectl create namespace {{ Namespace }}"
       ignore_errors: yes
     - name: Deploy SayarApp
-      command: "helm install --name=sayar-{{ Namespace }}  --namespace={{ Namespace }} ansible/sayarapp --set image.repository={{ ImageName }} --set image.tag={{ imageTag }} --set namespace={{ Namespace }}"
+      shell: "sudo helm install --name=sayar-{{ Namespace }}  --namespace={{ Namespace }} ansible/sayarapp --set image.repository={{ ImageName }} --set image.tag={{ imageTag }} --set namespace={{ Namespace }}"
       delegate_to: localhost
       ignore_errors: yes
     - name: Update SayarApp
-      command: "helm upgrade --wait --recreate-pods --namespace={{ Namespace }} --set image.repository={{ ImageName }} --set image.tag={{ imageTag }} --set namespace={{ Namespace }} sayar-{{ Namespace }} ansible/sayarapp"
+      shell: "sudo helm upgrade --wait --recreate-pods --namespace={{ Namespace }} --set image.repository={{ ImageName }} --set image.tag={{ imageTag }} --set namespace={{ Namespace }} sayar-{{ Namespace }} ansible/sayarapp"
       delegate_to: localhost
       ignore_errors: yes
 
