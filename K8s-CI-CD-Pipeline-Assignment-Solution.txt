@@ -1,0 +1,120 @@
+Kubernetes CI-CD Pipeline
+	https://medium.com/containerum/configuring-ci-cd-on-kubernetes-with-jenkins-89eab7234270
+
+Note:
+	I am using same k8s cluster that we used in class
+	I am just using a different CENT OS server that will have Docker, kubectl, Ansible, Jenkins, Helm
+	Create and connect to EC2 CENTOS 7 instance
+	sudo su -
+	Execute below commands as root
+
+Install Docker
+	yum install -y yum-utils
+	yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+	yum install -y docker
+	systemctl enable docker 
+	systemctl start docker
+	docker version
+	
+	Ref1 - https://turreta.com/2017/08/17/install-docker-in-red-hat-enterprise-linux-and-aws-ec2/
+	Ref2 - http://vlinux-freak.blogspot.com/2019/04/how-to-install-and-configure-docker-on.html
+
+Install kubectl 
+	vi /etc/yum.repos.d/kubernetes.repo
+		[kubernetes]
+		name=Kubernetes
+		baseurl=http://yum.kubernetes.io/repos/kubernetes-el7-x86_64
+		enabled=1
+		gpgcheck=1
+		repo_gpgcheck=1
+		gpgkey=http://packages.cloud.google.com/yum/doc/yum-key.gpg http://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+	yum install kubectl -y 
+	kubectl version
+
+Access our k8s cluster
+	mkdir -p ~/.kube
+	copy contents of "/etc/kubernetes/admin.conf" from K8s M1 to "~/.kube/config" 
+	chown $(id -u):$(id -g) ~/.kube/config
+	kubectl get nodes
+
+Install Ansible
+	vi /etc/yum.repos.d/ansible.repo
+		[Ansible]
+		name = ansible
+		baseurl = https://releases.ansible.com/ansible/rpm/release/epel-7-x86_64/
+		enabled = 1
+		gpgcheck = 0 
+	rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+	yum install ansible -y 
+	ansible --version
+
+Install Nodejs and Java
+	yum install epel-release nodejs -y
+	yum install java-1.8.0-openjdk.x86_64 -y
+	cp /etc/profile /etc/profile_backup
+	echo 'export JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk' | sudo tee -a /etc/profile 
+	echo 'export JRE_HOME=/usr/lib/jvm/jre' | sudo tee -a /etc/profile source /etc/profile
+
+Install Jenkins
+	rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+	wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+	yum install jenkins -y
+	systemctl start jenkins
+	systemctl status jenkins
+	systemctl stop firewalld
+	systemctl disable firewalld
+	cat /var/lib/jenkins/secrets/initialAdminPassword
+	http://<public_ip>:8080 ... Install suggested plugins + Install Docker (Cloudbees) plugins + Install kubernetes plugins
+
+Configure jenkins user
+	groupadd docker
+	usermod -aG docker jenkins
+	chown -R jenkins:docker /var/run/docker.sock
+	mkdir /var/lib/jenkins/.kube
+	cp ~/.kube/config /var/lib/jenkins/.kube/config
+	vi /etc/passwd
+		Jenkins Automation Server:/var/lib/jenkins:/bin/false ... change it to ... Jenkins Automation Server:/var/lib/jenkins:/bin/bash
+	vi /etc/ansible/hosts
+		[localhost]
+		127.0.0.1																						
+	visudo -f /etc/sudoers		# Add jenkins user to sudo users 
+		jenkins ALL=NOPASSWD: ALL
+	yum install git -y
+
+Install and configure Helm Package Manager
+	wget https://storage.googleapis.com/kubernetes-helm/helm-v2.11.0-linux-amd64.tar.gz
+    tar -xzvf helm-v2.11.0-linux-amd64.tar.gz
+    sudo mv linux-amd64/helm /usr/local/bin/helm
+	
+	
+
+vi helm-rbac.yaml
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tiller
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: tiller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+	name: tiller
+	namespace: kube-system
+
+	
+    kubectl create -f helm-rbac.yaml	
+	helm init --service-account tiller
+	
+Create Jenkins Pipeline "POC" as shown in below screenshot and build now
+	Repository URL - https://mAyman2612@bitbucket.org/mAyman2612/ci-cd-k8s.git
+	https://github.com/maheshkharwadkar/mk-k8-ci-cd.git
+	
+	
